@@ -24,7 +24,7 @@ const getUserPosts = (req,res)=>{
 };
 
 const getPostById = (req,res,next,id)=>{
-    Post.find(id)
+    Post.findById(id)
     .populate("comments","text created")
     .populate("comments.commentedBy","_id name")
     .populate("postedBy","_id name")
@@ -91,9 +91,9 @@ const addComment = (req,res)=>{
 };
 
 const deleteComment = (req,res)=>{
-    let comment = req.body.comment;
+    let commentId = req.body.commentId;
     Post.findByIdAndUpdate(req.body.postId,
-        {$pull:{comments:{_id : comment._id}}},
+        {$pull:{comments:{_id : commentId}}},
         {new:true})
     .exec((err,result)=>{
         if(err) res.json({error : err});
