@@ -11,7 +11,7 @@ const {
     removeFollower,
     addFollower,
     addFollowing} = require("../controllers/user");
-const { signin ,hasAuthorization,signout,requireSignin} = require("../controllers/auth");
+const { login ,hasAuthorization,signout,requireSignin} = require("../controllers/auth");
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ router.route("/api/user/add/follow").put(requireSignin,addFollowing,addFollower)
 router.route("/api/user/remove/unFollow").put(requireSignin,removeFollowing,removeFollower);
 
 router.get("/api/auth/signout",signout);
-router.post("/api/auth/signin",signin);
+router.post("/api/auth/login",login);
 
 router.param("userId",getUserById);
 

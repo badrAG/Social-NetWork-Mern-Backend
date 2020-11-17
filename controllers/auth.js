@@ -3,12 +3,12 @@ const jwt =require("jsonwebtoken");
 const expressJwt = require("express-jwt");
 require("dotenv").config();
 
-const signin = (req,res)=>{
+const login = (req,res)=>{
  User.findOne({email:req.body.email},(err,user)=>{
-    if(err || !user) res.json({message:"no data"});
+    if(err || !user) return res.json({error:"no data"});
     user.comparePassword(req.body.password,function(err,isMatch){
         if (!isMatch) {
-            res.json({error:"email and password is not match"})
+           return res.json({error:"email and password is not match"})
        }
        const token =jwt.sign({_id:user._id},process.env.JWT_SECRET);
        res.cookie("t",token,{
@@ -44,7 +44,7 @@ const hasAuthorization = (req,res,next)=>{
     next();
 };
 module.exports = {
-    signin,
+    login,
     signout,
     requireSignin,
     hasAuthorization
