@@ -16,7 +16,7 @@ const deleteUser = (req,res)=>{
 
     let user = req.profile;
     user.remove((err,deleteUser)=>{
-        if(err) res.json({error:err});
+        if(err) return res.json({error:err});
         res.json({message:"Compte deleted"})
     })
 };
@@ -33,7 +33,7 @@ const getUserPhoto = (req,res)=>{
 
 const getAllUsers = (req,res)=>{
 User.find((err,users)=>{
-    if(err||!users) res.json({error:err});
+    if(err||!users) return res.json({error:err});
     res.json(users);
 }).select("name UserName email about image createdAt");
 };
@@ -42,7 +42,7 @@ const updateUser = (req,res)=>{
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.parse(req,(err,fields,files)=>{
-        if(err) res.json({error:err+"imposible add photo"});
+        if(err) return res.json({error:err+"imposible add photo"});
         let user = req.profile;
         user = _.extend(user,fields);
         if(files.image){
@@ -50,7 +50,7 @@ const updateUser = (req,res)=>{
             user.image.contentType =files.image.type;
         }
         user.save((err,result)=>{
-            if(err) res.json({error:err});
+            if(err) return res.json({error:err});
             result.hashed_password = undefined;
             result.salt = undefined;
              res.json(result);
@@ -59,10 +59,10 @@ const updateUser = (req,res)=>{
 }
 const getUserById = (req,res,next,id)=>{
  User.findById(id)
- .populate("following","_id name")
- .populate("followers","_id name")
+ .populate("following","_id UserName")
+ .populate("followers","_id UserName")
  .exec((err,user)=>{
-    err || !user ? res.json({error:err})
+    err || !user ? res.json({error:"Empty User"})
     :req.profile = user;
     next();
  });
@@ -70,44 +70,44 @@ const getUserById = (req,res,next,id)=>{
 const addFollower = (req,res,next)=>{
     User.findByIdAndUpdate(req.body.followId,
         {$push:{followers:req.body.userId}},{new:true},
-        ((err,result)=>{
-    if(err) res.json({error:err});
-            next();
-        }))
+        ) .populate("following","_id UserName")
+        .populate("followers","_id UserName")
+        .exec((err,result)=>{
+            if(err)return res.json({error : err});
+            result.hashed_password = undefined;
+            result.salt = undefined;
+            res.json(result);
+        })
 
 }
 
 const addFollowing = (req,res,next)=>{
     User.findByIdAndUpdate(req.body.userId,
         {$push:{following:req.body.followId}},{new:true},
-        )
-        .populate("following","_id UserName")
-        .populate("followers","_id UserName")
-        .exec((err,result)=>{
-            if(err) res.json({error : err});
-            result.hashed_password = undefined;
-            result.salt = undefined;
-            res.json(result);
-        })
+       ((err,result)=>{
+    if(err) return res.json({error:err});
+            next();
+        }) )
+       
 };
 
 const removeFollowing = (req,res,next)=>{
     User.findByIdAndUpdate(req.body.userId,
-        {$pull:{following:req.body.unfollowId}},{new:true},
+        {$pull:{following:req.body.followId}},{new:true},
         ((err,result)=>{
-    if(err) res.json({error:err});
+    if(err)return res.json({error:err});
             next();
         }));
 };
 
 const removeFollower = (req,res,next)=>{
-    User.findByIdAndUpdate(req.body.unfollowId,
+    User.findByIdAndUpdate(req.body.followId,
         {$pull:{followers:req.body.userId}},{new:true},
         ) 
         .populate("following","_id UserName")
         .populate("followers","_id UserName")
         .exec((err,result)=>{
-            if(err) res.json({error : err});
+            if(err)return res.json({error : err});
             result.hashed_password = undefined;
             result.salt = undefined;
             res.json(result);

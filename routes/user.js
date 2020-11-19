@@ -19,7 +19,7 @@ router.post("/api/users/create",createUser);
 router.get("/api/all/users",requireSignin,getAllUsers);
 router.put("/api/user/:userId",requireSignin,hasAuthorization,updateUser);
 router.delete("/api/users/:userId",requireSignin,hasAuthorization,deleteUser);
-router.get("/api/user/photo/:userId",requireSignin,getUserPhoto);
+router.get("/api/user/photo/:userId",getUserPhoto);
 router.get("/api/user/:userId",getUser);
 
 router.route("/api/user/add/follow").put(requireSignin,addFollowing,addFollower);
