@@ -42,7 +42,7 @@ const updateUser = (req,res)=>{
     let form = new formidable.IncomingForm();
     form.keepExtensions = true;
     form.parse(req,(err,fields,files)=>{
-        if(err) return res.json({error:err+"imposible add photo"});
+        if(err) return res.json({error:"imposible add photo"});
         let user = req.profile;
         user = _.extend(user,fields);
         if(files.image){

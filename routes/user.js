@@ -17,10 +17,10 @@ const router = express.Router();
 
 router.post("/api/users/create",createUser);
 router.get("/api/all/users",requireSignin,getAllUsers);
-router.put("/api/user/:userId",requireSignin,hasAuthorization,updateUser);
+router.put("/api/updateuser/:userId",requireSignin,hasAuthorization,updateUser);
 router.delete("/api/users/:userId",requireSignin,hasAuthorization,deleteUser);
 router.get("/api/user/photo/:userId",getUserPhoto);
-router.get("/api/user/:userId",getUser);
+router.get("/api/:userId",getUser);
 
 router.route("/api/user/add/follow").put(requireSignin,addFollowing,addFollower);
 router.route("/api/user/remove/unFollow").put(requireSignin,removeFollowing,removeFollower);
