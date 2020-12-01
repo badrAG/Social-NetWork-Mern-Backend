@@ -3,7 +3,7 @@ const getAllPosts = (req,res)=>{
     Post.find({PostedBy:{$in : req.profile.following}})
     .populate("comments","text created")
     .populate("comments.commentedBy","_id UserName")
-    .populate("postedBy","_id UserName")
+    .populate("PostedBy","_id UserName")
     .sort("-createdAt")
     .exec((err,posts)=>{
         if(err) res.json({error:err});
@@ -15,7 +15,7 @@ const getUserPosts = (req,res)=>{
     Post.find({PostedBy:req.profile._id})
     .populate("comments","text created")
     .populate("comments.commentedBy","_id UserName")
-    .populate("postedBy","_id UserName")
+    .populate("PostedBy","_id UserName")
     .sort("-createdAt")
     .exec((err,posts)=>{
         if(err) res.json({error:err});
@@ -27,7 +27,7 @@ const getPostById = (req,res,next,id)=>{
     Post.findById(id)
     .populate("comments","text created")
     .populate("comments.commentedBy","_id UserName")
-    .populate("postedBy","_id UserName")
+    .populate("PostedBy","_id UserName")
     .exec((err,post)=>{
         if(err) res.json({error:err});
         req.post = post;

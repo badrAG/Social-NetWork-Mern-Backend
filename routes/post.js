@@ -15,7 +15,7 @@ const { getUserById} = require("../controllers/user");
 const router = express.Router();
  
 router.post("/api/post/create/:userId",requireSignin,addPost);
-router.get("/api/posts/:userId",requireSignin,getAllPosts);
+router.get("/api/all/posts/:userId",requireSignin,getAllPosts);
 router.get("/api/posts/by/:userId",requireSignin,getUserPosts);
 router.delete("/api/post/:postId",requireSignin,isOwner,deletPost);
 router.put("/api/post/like",requireSignin,likePost);
