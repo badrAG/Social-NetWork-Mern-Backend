@@ -1,6 +1,8 @@
 const Post = require("../models/post");
 const getAllPosts = (req,res)=>{
-    Post.find({PostedBy:{$in : req.profile.following}})
+    let following = req.profile.following;
+    following.push(req.profile._id);
+    Post.find({PostedBy:{$in : following}})
     .populate("comments","text created")
     .populate("comments.commentedBy","_id UserName")
     .populate("PostedBy","_id UserName")
@@ -36,7 +38,7 @@ const getPostById = (req,res,next,id)=>{
 };
 
 const isOwner = (req,res,next)=>{
-    let isMatch = req.post && req.auth && req.post.PostedBy._id == req.auth
+    let isMatch = req.post && req.auth && req.post.PostedBy._id == req.auth._id
     if(!isMatch){
         return res.json({error:"Not Authorized"});
     }
@@ -56,12 +58,13 @@ const deletPost = (req,res)=>{
     let postToDelet = req.post;
     postToDelet.remove((err,deletPost)=>{
         if(err) res.json({error:err});
-        res.json({meesage:"Post removed"});
+        res.json(deletPost);
     });
 };
 
 const likePost = (req,res)=>{
-    Post.findByIdAndUpdate(req.body.postId,{$push:{likes:req.body.userId}},{new:true})
+    Post.findByIdAndUpdate(req.body.postId,
+        {$push:{likes:req.body.userId}},{new:true})
     .exec((err,result)=>{
         if(err) res.json({error : err});
         res.json(result);
@@ -84,6 +87,10 @@ const addComment = (req,res)=>{
     Post.findByIdAndUpdate(req.body.postId,
         {$push:{comments:comment}},
         {new:true})
+        .populate("comments","text created")
+    .populate("comments.commentedBy","_id UserName")
+    .populate("PostedBy","_id UserName")
+    .sort("-createdAt")
     .exec((err,result)=>{
         if(err) res.json({error : err});
         res.json(result);
