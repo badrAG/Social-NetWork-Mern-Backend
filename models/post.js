@@ -7,8 +7,12 @@ const PostSchema = new mongoose.Schema({
         trim:true,
     },
     image:{
-        data:Buffer,
-        contentType:String
+        type:String,
+        trim:true,
+    },
+    video:{
+        type:String,
+        trim:true,
     },
     PostedBy:{
         type:ObjectId,

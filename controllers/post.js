@@ -1,4 +1,7 @@
 const Post = require("../models/post");
+const fs = require("fs");
+const { promisify } = require("util");
+const pipeline = promisify(require("stream").pipeline);
 const getAllPosts = (req, res) => {
   let following = req.profile.following;
   following.push(req.profile._id);
@@ -45,10 +48,37 @@ const isOwner = (req, res, next) => {
   next();
 };
 
-const addPost = (req, res) => {
-  const { text } = req.body;
-  let post = new Post({ text, PostedBy: req.profile._id });
-  post.save((err, data) => {
+const addPost = async (req, res) => {
+  let fileName;
+  if (req.file !== null) {
+    try {
+      if (
+        req.file.detectedMimeType != "image/jpg" &&
+        req.file.detectedMimeType != "image/png" &&
+        req.file.detectedMimeType != "image/jpeg"
+      ) {
+        throw Error("invalid body.image");
+      }
+      if (req.file.size > 500000) throw Error("max size");
+    } catch (err) {
+      return res.status(201).json(err);
+    }
+    fileName = req.profile._id + Date.now() + ".jpg";
+    await pipeline(
+      req.file.stream,
+      fs.createWriteStream(
+        `${__dirname}/../../Social-NetWork-mern-Frontend/public/uploadFile/${fileName}`
+      )
+    );
+  }
+  let post = new Post({
+    text: req.body.text,
+    image: req.file !== null ? "./uploadFile/" + fileName : "",
+    PostedBy: req.profile._id,
+    video: req.body.video,
+  });
+  post
+  .save((err, data) => {
     if (err) res.json({ error: err });
     res.json(data);
   });
@@ -92,25 +122,23 @@ const addComment = (req, res) => {
     { $push: { comments: comment } },
     { new: true }
   )
-  .populate("comments", "text created")
+    .populate("comments", "text created")
     .populate("comments.commentedBy", "_id UserName")
     .populate("PostedBy", "_id UserName")
-  .exec((err, result) => {
-    if (err) res.json({ error: err });
-    res.json(result);
-  });
+    .exec((err, result) => {
+      if (err) res.json({ error: err });
+      res.json(result);
+    });
 };
 
 const deleteComment = (req, res) => {
-    
   let commentId = req.body.commentId;
-  console.log(commentId,"--",req.body.postId)
   Post.findByIdAndUpdate(
     req.body.postId,
     { $pull: { comments: { _id: commentId } } },
     { new: true }
   )
-  .populate("comments", "text created")
+    .populate("comments", "text created")
     .populate("comments.commentedBy", "_id UserName")
     .populate("PostedBy", "_id UserName")
     .exec((err, result) => {
