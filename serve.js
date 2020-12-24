@@ -6,6 +6,7 @@ const cookieParser =require("cookie-parser");
 const bodyParser = require("body-parser");
 const userRoutes = require("./routes/user");
 const postRoutes = require("./routes/post");
+const storiesRoutes = require("./routes/stories");
 
 const app = express();
 
@@ -40,6 +41,7 @@ connectToDatabase();
 //use routes
 app.use("/",userRoutes);
 app.use("/",postRoutes);
+app.use("/",storiesRoutes);
 //start port
 app.listen(port,(err)=>{
    err ? console.log(err)

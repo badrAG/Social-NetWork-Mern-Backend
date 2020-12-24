@@ -10,6 +10,8 @@ const getAllPosts = (req, res) => {
     .populate("comments.commentedBy", "_id UserName")
     .populate("PostedBy", "_id UserName")
     .sort("-createdAt")
+    .limit(5)
+    .skip(parseInt(req.query.skip))
     .exec((err, posts) => {
       if (err) res.json({ error: err });
       res.json(posts);
