@@ -2,6 +2,7 @@ const Post = require("../models/post");
 const fs = require("fs");
 const { promisify } = require("util");
 const pipeline = promisify(require("stream").pipeline);
+
 const getAllPosts = (req, res) => {
   let following = req.profile.following;
   following.push(req.profile._id);

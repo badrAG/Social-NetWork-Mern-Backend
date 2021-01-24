@@ -32,7 +32,7 @@ const getAllUsers = async (req, res) => {
   await User.find((err, users) => {
     if (err || !users) return res.json({ error: err });
     res.json(users);
-  }).select("name UserName email about image createdAt");
+  }).select("name UserName following email about image createdAt");
 };
 
 const updateUser = (req, res) => {
