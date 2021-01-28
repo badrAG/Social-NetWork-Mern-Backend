@@ -32,7 +32,7 @@ router.get("/api/all/posts/:userId",requireSignin,getAllPosts);
 router.get("/api/image/posts/:userId",requireSignin,getImagePosts);
 router.get("/api/videos/posts/:userId",requireSignin,getVideoPosts);
 router.get("/api/posts/by/:userId",requireSignin,getUserPosts);
-router.delete("/api/post/:postId",requireSignin,isOwner,deletPost);
+router.delete("/api/post/:postId",requireSignin,deletPost);
 router.put("/api/post/like",requireSignin,likePost);
 router.put("/api/post/unlike",requireSignin,unLikePost);
 router.put("/api/post/comment",requireSignin,addComment);
