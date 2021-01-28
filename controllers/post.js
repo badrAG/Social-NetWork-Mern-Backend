@@ -51,16 +51,15 @@ const getVideoPosts = (req, res) => {
       res.json(posts);
     });
 };
-const getPostById = (req, res, next, id) => {
-  Post.findById(id)
+const getPostById = (req, res, next,id) => {
+    Post.findById(id)
     .populate("comments", "text created")
     .populate("comments.commentedBy", "_id UserName image")
     .populate("PostedBy", "_id UserName")
     .exec((err, post) => {
-      if (err) res.json({ error: err });
-      req.post = post;
+      err || !post ? res.json({ error: "Empty Post" }) : (req.post = post);
+      next();
     });
-    next();
 };
 
 const isOwner = (req, res, next) => {
