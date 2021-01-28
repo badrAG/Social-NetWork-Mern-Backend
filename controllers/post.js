@@ -1,15 +1,12 @@
 const Post = require("../models/post");
-const fs = require("fs");
-const { promisify } = require("util");
-const pipeline = promisify(require("stream").pipeline);
 
 const getAllPosts = (req, res) => {
   let following = req.profile.following;
   following.push(req.profile._id);
   Post.find({ PostedBy: { $in: following } })
     .populate("comments", "text created")
-    .populate("comments.commentedBy", "_id UserName")
-    .populate("PostedBy", "_id UserName")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image")
     .sort("-createdAt")
     .limit(5)
     .skip(parseInt(req.query.skip))
@@ -22,25 +19,48 @@ const getAllPosts = (req, res) => {
 const getUserPosts = (req, res) => {
   Post.find({ PostedBy: req.profile._id })
     .populate("comments", "text created")
-    .populate("comments.commentedBy", "_id UserName")
-    .populate("PostedBy", "_id UserName")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image")
     .sort("-createdAt")
     .exec((err, posts) => {
       if (err) res.json({ error: err });
       res.json(posts);
     });
 };
-
+ const getImagePosts = (req, res) => {
+  Post.find({ PostedBy: req.profile._id })
+    .where("image").ne(null)
+    .populate("comments", "text created")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image")
+    .sort("-createdAt")
+    .exec((err, posts) => {
+      if (err) res.json({ error: err });
+      res.json(posts);
+    });
+};
+const getVideoPosts = (req, res) => {
+  Post.find({ PostedBy: req.profile._id })
+    .where("video").ne("")
+    .populate("comments", "text created")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image")
+    .sort("-createdAt")
+    .exec((err, posts) => {
+      if (err) res.json({ error: err });
+      res.json(posts);
+    });
+};
 const getPostById = (req, res, next, id) => {
   Post.findById(id)
     .populate("comments", "text created")
-    .populate("comments.commentedBy", "_id UserName")
+    .populate("comments.commentedBy", "_id UserName image")
     .populate("PostedBy", "_id UserName")
     .exec((err, post) => {
       if (err) res.json({ error: err });
       req.post = post;
-      next();
     });
+    next();
 };
 
 const isOwner = (req, res, next) => {
@@ -52,39 +72,21 @@ const isOwner = (req, res, next) => {
 };
 
 const addPost = async (req, res) => {
-  let fileName;
-  if (req.file !== null) {
-    try {
-      if (
-        req.file.detectedMimeType != "image/jpg" &&
-        req.file.detectedMimeType != "image/png" &&
-        req.file.detectedMimeType != "image/jpeg"
-      ) {
-        throw Error("invalid body.image");
-      }
-      if (req.file.size > 500000) throw Error("max size");
-    } catch (err) {
-      return res.status(201).json(err);
-    }
-    fileName = req.profile._id + Date.now() + ".jpg";
-    await pipeline(
-      req.file.stream,
-      fs.createWriteStream(
-        `${__dirname}/../../Social-NetWork-mern-Frontend/public/uploadFile/${fileName}`
-      )
-    );
-  }
-  let post = new Post({
-    text: req.body.text,
-    image: req.file !== null ? "./uploadFile/" + fileName : "",
-    PostedBy: req.profile._id,
-    video: req.body.video,
-  });
-  post
-  .save((err, data) => {
-    if (err) res.json({ error: err });
-    res.json(data);
-  });
+    let picture =  req.file === null || req.file === undefined ? null : "http://localhost:8888/postPicture/" + req.file.filename;
+      let post = new Post({
+        text: req.body.text,
+        image: picture,
+        PostedBy: req.profile._id,
+        video: req.body.video,
+      });
+      post
+      .save().then(result => {
+        Post
+        .populate(post,{path:"PostedBy",select:"_id UserName image"})
+        .then(newpost=>{
+          res.json(newpost)
+        })
+      }); 
 };
 
 const deletPost = (req, res) => {
@@ -126,8 +128,8 @@ const addComment = (req, res) => {
     { new: true }
   )
     .populate("comments", "text created")
-    .populate("comments.commentedBy", "_id UserName")
-    .populate("PostedBy", "_id UserName")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image ")
     .exec((err, result) => {
       if (err) res.json({ error: err });
       res.json(result);
@@ -142,8 +144,8 @@ const deleteComment = (req, res) => {
     { new: true }
   )
     .populate("comments", "text created")
-    .populate("comments.commentedBy", "_id UserName")
-    .populate("PostedBy", "_id UserName")
+    .populate("comments.commentedBy", "_id UserName image")
+    .populate("PostedBy", "_id UserName image")
     .exec((err, result) => {
       if (err) res.json({ error: err });
       res.json(result);
@@ -156,9 +158,11 @@ module.exports = {
   getUserPosts,
   getPostById,
   isOwner,
+  getImagePosts,
   deletPost,
   likePost,
   unLikePost,
   addComment,
   deleteComment,
+  getVideoPosts
 };

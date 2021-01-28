@@ -1,72 +1,26 @@
 const Stories = require("../models/stories");
-const fs = require("fs");
-const { promisify } = require("util");
-const pipeline = promisify(require("stream").pipeline);
 const AddStory = async (req, res) => {
-  let fileName;
-  if (req.file !== null) {
-    try {
-      if (
-        req.file.detectedMimeType != "image/jpg" &&
-        req.file.detectedMimeType != "image/png" &&
-        req.file.detectedMimeType != "image/jpeg"
-      ) {
-        throw Error("invalid body.image");
-      }
-      if (req.file.size > 500000) throw Error("max size");
-    } catch (err) {
-      return res.status(201).json(err);
-    }
-    fileName = req.profile._id + Date.now() + ".jpg";
-    await pipeline(
-      req.file.stream,
-      fs.createWriteStream(
-        `${__dirname}/../../Social-NetWork-mern-Frontend/public/StoriesPicture/${fileName}`
-      )
-    );
-  }
-
   let story = new Stories({
-    Image: {picture : req.file !== null ? "/../StoriesPicture/" + fileName : ""},
+    Image: {picture : req.file !== null ? "http://localhost:8888/storyPicture/" + req.file.filename  : ""},
     StoryBy: req.profile._id,
   });
-  story.save((err, data) => {
-    if (err) res.json({ error: err });
-    res.json(data);
+  story.save().then(result => {
+    Stories
+    .populate(story,{path:"StoryBy",select:"_id UserName image"})
+    .then(newstory=>{
+      res.json(newstory)
+    })
   });
 };
 
 const addNewStory = async(req, res) => {
-  let fileName;
-  if (req.file !== null) {
-    try {
-      if (
-        req.file.detectedMimeType != "image/jpg" &&
-        req.file.detectedMimeType != "image/png" &&
-        req.file.detectedMimeType != "image/jpeg"
-      ) {
-        throw Error("invalid body.image");
-      }
-      if (req.file.size > 500000) throw Error("max size");
-    } catch (err) {
-      return res.status(201).json(err);
-    }
-    fileName = req.profile._id + Date.now() + ".jpg";
-    await pipeline(
-      req.file.stream,
-      fs.createWriteStream(
-        `${__dirname}/../../Social-NetWork-mern-Frontend/public/StoriesPicture/${fileName}`
-      )
-    );
-  }
-
-  let image = {picture : req.file !== null ? "/../StoriesPicture/" + fileName : ""};
+  let image = {picture : req.file !== null ? "http://localhost:8888/storyPicture/" + req.file.filename : ""};
   Stories.findByIdAndUpdate(
     req.body.storyId,
     { $push: { Image: image } },
     { new: true }
   )
-    .populate("StoryBy", "_id UserName")
+    .populate("StoryBy", "_id UserName image")
     .exec((err, result) => {
       if (err) res.json({ error: err });
       res.json(result);
@@ -78,7 +32,7 @@ const getStories = (req, res) => {
   let following = req.profile.following;
   following.push(req.profile._id);
   Stories.find({ StoryBy: { $in: following } })
-    .populate("StoryBy", "_id UserName")
+    .populate("StoryBy", "_id UserName image")
     .sort("-createdAt")
     .exec((err, stories) => {
       if (err) res.json({ error: err });
@@ -116,7 +70,7 @@ const isOwner = (req, res, next) => {
 
 const getStoryById = (req, res,next, id) => {
     Stories.findById(id)
-      .populate("StoryBy", "_id UserName")
+      .populate("StoryBy", "_id UserName image")
       .exec((err, story) => {
         err || !story ? res.json({ error: "Empty Story" }) : (req.story = story);
         next();
@@ -131,7 +85,7 @@ const getStoryById = (req, res,next, id) => {
       { $push: { Image: image }  },
       { new: true }
     )
-    .populate("Image.views", "_id UserName")
+    .populate("Image.views", "_id UserName image")
     .exec((err, result) => {
       if (err) res.json({ error: err });
       console.log(image)

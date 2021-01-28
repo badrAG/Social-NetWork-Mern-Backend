@@ -1,7 +1,5 @@
 const User = require("../models/user");
 const _ = require("lodash");
-const formidable = require("formidable");
-const fs = require("fs");
 
 const createUser = (req, res) => {
   const { name, UserName, email, password } = req.body;
@@ -19,14 +17,6 @@ const deleteUser = (req, res) => {
   });
 };
 
-const getUserPhoto = (req, res) => {
-  if (req.profile.image.data) {
-    res.set("Content-Type", req.profile.image.contentType);
-    return res.send(req.profile.image.data);
-  } else {
-    return res.sendFile("");
-  }
-};
 
 const getAllUsers = async (req, res) => {
   await User.find((err, users) => {
@@ -36,16 +26,13 @@ const getAllUsers = async (req, res) => {
 };
 
 const updateUser = (req, res) => {
-  let form = new formidable.IncomingForm();
-  form.keepExtensions = true;
-  form.parse(req, (err, fields, files) => {
-    if (err) return res.json({ error: "imposible add photo" });
     let user = req.profile;
-    user = _.extend(user, fields);
-      if (files.image) {
-        console.log(true);
-        user.image.data = fs.readFileSync(files.image.path);
-        user.image.contentType = files.image.type;
+    user = _.extend(user, req.body);
+      if (req.files['user_picture']) {
+        user.image = "http://localhost:8888/userPicture/" + req.files['user_picture'][0].filename;
+      }
+      if (req.files['user_capture']) {
+        user.capture = "http://localhost:8888/userPicture/" + req.files['user_capture'][0].filename;
       }
     user.save((err, result) => {
       if (err) return res.json({ error: err });
@@ -53,12 +40,11 @@ const updateUser = (req, res) => {
       result.salt = undefined;
       res.json(result);
     });
-  });
 };
 const getUserById = (req, res, next, id) => {
   User.findById(id)
-    .populate("following", "_id UserName")
-    .populate("followers", "_id UserName")
+    .populate("following", "_id UserName image")
+    .populate("followers", "_id UserName image")
     .exec((err, user) => {
       err || !user ? res.json({ error: "Empty User" }) : (req.profile = user);
       next();
@@ -70,8 +56,8 @@ const addFollower = (req, res, next) => {
     { $push: { followers: req.body.userId } },
     { new: true }
   )
-    .populate("following", "_id UserName")
-    .populate("followers", "_id UserName")
+    .populate("following", "_id UserName image")
+    .populate("followers", "_id UserName image")
     .exec((err, result) => {
       if (err) return res.json({ error: err });
       result.hashed_password = undefined;
@@ -110,8 +96,8 @@ const removeFollower = (req, res, next) => {
     { $pull: { followers: req.body.userId } },
     { new: true }
   )
-    .populate("following", "_id UserName")
-    .populate("followers", "_id UserName")
+    .populate("following", "_id UserName image")
+    .populate("followers", "_id UserName image")
     .exec((err, result) => {
       if (err) return res.json({ error: err });
       result.hashed_password = undefined;
@@ -129,7 +115,6 @@ module.exports = {
   createUser,
   getUserById,
   getUser,
-  getUserPhoto,
   updateUser,
   getAllUsers,
   deleteUser,

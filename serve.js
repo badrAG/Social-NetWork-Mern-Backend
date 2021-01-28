@@ -12,6 +12,9 @@ const app = express();
 
 require("dotenv").config();
 //middlewares
+app.use('/storyPicture',express.static('Upload/StoriesPicture'))
+app.use('/postPicture',express.static('Upload/PostPicture'))
+app.use('/userPicture',express.static('Upload/UserPicture'))
 app.use(cors());
 app.use(bodyParser.json());
 app.use(badyParser.urlencoded({extended : true}));
