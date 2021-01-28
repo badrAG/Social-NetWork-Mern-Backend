@@ -21,11 +21,11 @@ const UserSchema = new mongoose.Schema({
     },
     image:{
         type:String,
-        default:"https://api-social-network-mern.herokuapp.com/userPicture/user_picture_16118665268136013211e0aa82100150a2dec.png"
+        default:"https://www.edmundsgovtech.com/wp-content/uploads/2020/01/default-picture_0_0.png"
     },
     capture:{
         type:String,
-        default:"https://api-social-network-mern.herokuapp.com/userPicture/user_capture_16118665268156013211e0aa82100150a2dec.png"
+        default:"https://increasify.com.au/wp-content/uploads/2016/08/default-image.png"
     },
     email:{
         type:String,
