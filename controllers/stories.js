@@ -1,7 +1,7 @@
 const Stories = require("../models/stories");
 const AddStory = async (req, res) => {
   let story = new Stories({
-    Image: {picture : req.file !== null ? "http://localhost:8888/storyPicture/" + req.file.filename  : ""},
+    Image: {picture : req.file !== null ? "https://api-social-network-mern.herokuapp.com/storyPicture/" + req.file.filename  : ""},
     StoryBy: req.profile._id,
   });
   story.save().then(result => {
@@ -14,7 +14,7 @@ const AddStory = async (req, res) => {
 };
 
 const addNewStory = async(req, res) => {
-  let image = {picture : req.file !== null ? "http://localhost:8888/storyPicture/" + req.file.filename : ""};
+  let image = {picture : req.file !== null ? "https://api-social-network-mern.herokuapp.com/storyPicture/" + req.file.filename : ""};
   Stories.findByIdAndUpdate(
     req.body.storyId,
     { $push: { Image: image } },

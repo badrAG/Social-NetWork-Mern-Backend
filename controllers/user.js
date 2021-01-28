@@ -29,10 +29,10 @@ const updateUser = (req, res) => {
     let user = req.profile;
     user = _.extend(user, req.body);
       if (req.files['user_picture']) {
-        user.image = "http://localhost:8888/userPicture/" + req.files['user_picture'][0].filename;
+        user.image = "https://api-social-network-mern.herokuapp.com/userPicture/" + req.files['user_picture'][0].filename;
       }
       if (req.files['user_capture']) {
-        user.capture = "http://localhost:8888/userPicture/" + req.files['user_capture'][0].filename;
+        user.capture = "https://api-social-network-mern.herokuapp.com/userPicture/" + req.files['user_capture'][0].filename;
       }
     user.save((err, result) => {
       if (err) return res.json({ error: err });

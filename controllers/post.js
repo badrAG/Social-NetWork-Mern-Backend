@@ -72,7 +72,7 @@ const isOwner = (req, res, next) => {
 };
 
 const addPost = async (req, res) => {
-    let picture =  req.file === null || req.file === undefined ? null : "http://localhost:8888/postPicture/" + req.file.filename;
+    let picture =  req.file === null || req.file === undefined ? null : "https://api-social-network-mern.herokuapp.com/postPicture/" + req.file.filename;
       let post = new Post({
         text: req.body.text,
         image: picture,
