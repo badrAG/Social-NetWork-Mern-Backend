@@ -20,10 +20,12 @@ const UserSchema = new mongoose.Schema({
         trim:true
     },
     image:{
-        type:String
+        type:String,
+        default:"https://api-social-network-mern.herokuapp.com/userPicture/user_picture_16118665268136013211e0aa82100150a2dec.png"
     },
     capture:{
-        type:String
+        type:String,
+        default:"https://api-social-network-mern.herokuapp.com/userPicture/user_capture_16118665268156013211e0aa82100150a2dec.png"
     },
     email:{
         type:String,
